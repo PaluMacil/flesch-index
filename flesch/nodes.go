@@ -1,24 +1,80 @@
 package flesch
 
+import "strings"
+
 // Sentence is encountered whenever you find a word that
 // ends in a specific punctuation symbol: a period, question
 // mark, or exclamation point.
 type Sentence struct {
+	allTokens []Token
+	Start     int
+	End       int
+	Words     []Word
+}
+
+func (s Sentence) Tokens() []Token {
+	return s.allTokens[s.Start : s.End+1]
+}
+
+func (s Sentence) String() string {
+	var b strings.Builder
+	for _, t := range s.Tokens() {
+		b.WriteRune(t.Value)
+	}
+	return b.String()
 }
 
 // Word is contiguous sequence of alphabetic characters.
 // Whitespace defines word boundaries.
 type Word struct {
+	allTokens []Token
+	Start     int
+	End       int
 }
 
-// Syllable is considered to have been encountered whenever
+func (w Word) Tokens() []Token {
+
+	return w.allTokens[w.Start : w.End+1]
+}
+
+func (w Word) String() string {
+	var b strings.Builder
+	for _, t := range w.Tokens() {
+		b.WriteRune(t.Value)
+	}
+	return b.String()
+}
+
+// Syllables are considered to have been encountered whenever
 // you detect a vowel at the start of a word or a vowel
 // following a consonant in a word. A lone ‘e’ at the end
 // of a word does not count as a syllable.
-type Syllable struct {
-}
+func (w Word) Syllables() int {
+	var syllables int
+	word := w.String()
 
-type Character struct {
+	// vowel at start of word
+	if RuneToTokenType(rune(word[0])) == TokenTypeVowel {
+		syllables++
+	}
+
+	// ...or a vowel following a consonant in a word
+	for i, r := range word {
+		// Not relevant for first character
+		if i == 0 {
+			continue
+		}
+		if RuneToTokenType(r) == TokenTypeVowel && RuneToTokenType(rune(word[i-1])) == TokenTypeConsonant {
+			// do not count if last character and a LONE 'e'
+			if i == /* last: */ len(word)-1 && /* is 'e': */ r == 'e' && /* lone: */ rune(word[i-1]) != 'e' {
+				continue
+			}
+			// otherwise, count it
+			syllables++
+		}
+	}
+
+	return 0
 }
 
 type TokenType int
@@ -28,6 +84,7 @@ func RuneToTokenType(r rune) TokenType {
 	if !ok {
 		return TokenTypeOther
 	}
+
 	return tokenType
 }
 
@@ -106,9 +163,15 @@ var tokenTypeLookup = map[rune]TokenType{
 	'\n': TokenTypeWhiteSpace,
 	'\r': TokenTypeWhiteSpace,
 
+	// Word Stop
+	'”': TokenTypeWordStop,
+	'"': TokenTypeWordStop,
+	',': TokenTypeWordStop,
+	')': TokenTypeWordStop,
+
 	// Sentence Stop
 	'.': TokenTypeSentenceStop,
-	':': TokenTypeSentenceStop,
+	';': TokenTypeSentenceStop,
 	'!': TokenTypeSentenceStop,
 	'?': TokenTypeSentenceStop,
 }
@@ -116,6 +179,7 @@ var tokenTypeLookup = map[rune]TokenType{
 const (
 	TokenTypeSentenceStop TokenType = iota
 	TokenTypeWhiteSpace
+	TokenTypeWordStop
 	TokenTypeVowel
 	TokenTypeConsonant
 	TokenTypeNumber
