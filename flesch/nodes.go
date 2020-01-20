@@ -2,6 +2,51 @@ package flesch
 
 import "strings"
 
+type Document struct {
+	Sentences []Sentence
+	name      string
+}
+
+func (d Document) Name() string {
+	if d.name == "" {
+		return "(no name)"
+	}
+
+	return d.name
+}
+
+func (d Document) WordCount() int {
+	var count int
+	for _, sentence := range d.Sentences {
+		count += len(sentence.Words)
+	}
+
+	return count
+}
+
+func (d Document) Syllables() int {
+	var count int
+	for _, s := range d.Sentences {
+		count += s.Syllables()
+	}
+
+	return count
+}
+
+func (d Document) Score() float32 {
+	syllables := float32(d.Syllables())
+	words := float32(d.WordCount())
+	sentences := float32(len(d.Sentences))
+
+	avgWordPerSen := words / sentences
+	// average syllables per word
+	avgSylPerWord := syllables / words
+
+	score := 206.835 - (84.6 * avgSylPerWord) - (1.015 * avgWordPerSen)
+
+	return score
+}
+
 // Sentence is encountered whenever you find a word that
 // ends in a specific punctuation symbol: a period, question
 // mark, or exclamation point.
@@ -22,6 +67,15 @@ func (s Sentence) String() string {
 		b.WriteRune(r)
 	}
 	return b.String()
+}
+
+func (s Sentence) Syllables() int {
+	var count int
+	for _, w := range s.Words {
+		count += w.Syllables()
+	}
+
+	return count
 }
 
 // Word is contiguous sequence of alphabetic characters.
@@ -48,25 +102,34 @@ func (w Word) String() string {
 // Syllables are considered to have been encountered whenever
 // you detect a vowel at the start of a word or a vowel
 // following a consonant in a word. A lone ‘e’ at the end
-// of a word does not count as a syllable.
+// of a word does not count as a syllable. Three letter words
+// or less are always one syllable.
 func (w Word) Syllables() int {
-	var syllables int
-	word := w.String()
+	word := w.Runes()
 
-	// vowel at start of word
-	if TypeOfRune(rune(word[0])) == RuneTypeVowel {
+	return syllablesFromRunes(word)
+}
+
+func syllablesFromRunes(runes []rune) int {
+	var syllables int
+	if len(runes) <= 3 {
+		return 1
+	}
+
+	// vowel at start of runes
+	if TypeOfRune(runes[0]) == RuneTypeVowel {
 		syllables++
 	}
 
-	// ...or a vowel following a consonant in a word
-	for i, r := range word {
-		// Not relevant for first character
+	// ...or a vowel following a consonant in a runes
+	for i, r := range runes {
+		// Not relevant for first rune
 		if i == 0 {
 			continue
 		}
-		if TypeOfRune(r) == RuneTypeVowel && TypeOfRune(rune(word[i-1])) == RuneTypeConsonant {
-			// do not count if last character and a LONE 'e'
-			if i == /* last: */ len(word)-1 && /* is 'e': */ r == 'e' && /* lone: */ rune(word[i-1]) != 'e' {
+		if TypeOfRune(r) == RuneTypeVowel && TypeOfRune(runes[i-1]) == RuneTypeConsonant {
+			// do not count if last rune and a LONE 'e'
+			if i == /* last: */ len(runes)-1 && /* is 'e': */ r == 'e' && /* lone: */ runes[i-1] != 'e' {
 				continue
 			}
 			// otherwise, count it
@@ -74,7 +137,16 @@ func (w Word) Syllables() int {
 		}
 	}
 
-	return 0
+	// all words are at least one syllable
+	if syllables == 0 {
+		syllables = 1
+	}
+
+	return syllables
+}
+
+func SyllablesFromString(word string) int {
+	return syllablesFromRunes([]rune(word))
 }
 
 type RuneType int
@@ -168,6 +240,7 @@ var runeLookup = map[rune]RuneType{
 	'"': RuneTypeWordStop,
 	',': RuneTypeWordStop,
 	')': RuneTypeWordStop,
+	':': RuneTypeWordStop,
 
 	// Sentence Stop
 	'.': RuneTypeSentenceStop,
