@@ -6,20 +6,20 @@ import "strings"
 // ends in a specific punctuation symbol: a period, question
 // mark, or exclamation point.
 type Sentence struct {
-	allTokens []Token
-	Start     int
-	End       int
-	Words     []Word
+	allRunes []rune
+	Start    int
+	End      int
+	Words    []Word
 }
 
-func (s Sentence) Tokens() []Token {
-	return s.allTokens[s.Start : s.End+1]
+func (s Sentence) Runes() []rune {
+	return s.allRunes[s.Start : s.End+1]
 }
 
 func (s Sentence) String() string {
 	var b strings.Builder
-	for _, t := range s.Tokens() {
-		b.WriteRune(t.Value)
+	for _, r := range s.Runes() {
+		b.WriteRune(r)
 	}
 	return b.String()
 }
@@ -27,20 +27,20 @@ func (s Sentence) String() string {
 // Word is contiguous sequence of alphabetic characters.
 // Whitespace defines word boundaries.
 type Word struct {
-	allTokens []Token
-	Start     int
-	End       int
+	allRunes []rune
+	Start    int
+	End      int
 }
 
-func (w Word) Tokens() []Token {
+func (w Word) Runes() []rune {
 
-	return w.allTokens[w.Start : w.End+1]
+	return w.allRunes[w.Start : w.End+1]
 }
 
 func (w Word) String() string {
 	var b strings.Builder
-	for _, t := range w.Tokens() {
-		b.WriteRune(t.Value)
+	for _, r := range w.Runes() {
+		b.WriteRune(r)
 	}
 	return b.String()
 }
@@ -54,7 +54,7 @@ func (w Word) Syllables() int {
 	word := w.String()
 
 	// vowel at start of word
-	if RuneToTokenType(rune(word[0])) == TokenTypeVowel {
+	if TypeOfRune(rune(word[0])) == RuneTypeVowel {
 		syllables++
 	}
 
@@ -64,7 +64,7 @@ func (w Word) Syllables() int {
 		if i == 0 {
 			continue
 		}
-		if RuneToTokenType(r) == TokenTypeVowel && RuneToTokenType(rune(word[i-1])) == TokenTypeConsonant {
+		if TypeOfRune(r) == RuneTypeVowel && TypeOfRune(rune(word[i-1])) == RuneTypeConsonant {
 			// do not count if last character and a LONE 'e'
 			if i == /* last: */ len(word)-1 && /* is 'e': */ r == 'e' && /* lone: */ rune(word[i-1]) != 'e' {
 				continue
@@ -77,116 +77,111 @@ func (w Word) Syllables() int {
 	return 0
 }
 
-type TokenType int
+type RuneType int
 
-func RuneToTokenType(r rune) TokenType {
-	tokenType, ok := tokenTypeLookup[r]
+func TypeOfRune(r rune) RuneType {
+	runeType, ok := runeLookup[r]
 	if !ok {
-		return TokenTypeOther
+		return RuneTypeOther
 	}
 
-	return tokenType
+	return runeType
 }
 
-var tokenTypeLookup = map[rune]TokenType{
+var runeLookup = map[rune]RuneType{
 	// Numbers
-	'0': TokenTypeNumber,
-	'1': TokenTypeNumber,
-	'2': TokenTypeNumber,
-	'3': TokenTypeNumber,
-	'4': TokenTypeNumber,
-	'5': TokenTypeNumber,
-	'6': TokenTypeNumber,
-	'7': TokenTypeNumber,
-	'8': TokenTypeNumber,
-	'9': TokenTypeNumber,
+	'0': RuneTypeNumber,
+	'1': RuneTypeNumber,
+	'2': RuneTypeNumber,
+	'3': RuneTypeNumber,
+	'4': RuneTypeNumber,
+	'5': RuneTypeNumber,
+	'6': RuneTypeNumber,
+	'7': RuneTypeNumber,
+	'8': RuneTypeNumber,
+	'9': RuneTypeNumber,
 
 	// Lowercase
-	'a': TokenTypeVowel,
-	'b': TokenTypeConsonant,
-	'c': TokenTypeConsonant,
-	'd': TokenTypeConsonant,
-	'e': TokenTypeVowel,
-	'f': TokenTypeConsonant,
-	'g': TokenTypeConsonant,
-	'h': TokenTypeConsonant,
-	'i': TokenTypeVowel,
-	'j': TokenTypeConsonant,
-	'k': TokenTypeConsonant,
-	'l': TokenTypeConsonant,
-	'm': TokenTypeConsonant,
-	'n': TokenTypeConsonant,
-	'o': TokenTypeVowel,
-	'p': TokenTypeConsonant,
-	'q': TokenTypeConsonant,
-	'r': TokenTypeConsonant,
-	's': TokenTypeConsonant,
-	't': TokenTypeConsonant,
-	'u': TokenTypeVowel,
-	'v': TokenTypeConsonant,
-	'w': TokenTypeConsonant,
-	'x': TokenTypeConsonant,
-	'y': TokenTypeConsonant,
-	'z': TokenTypeConsonant,
+	'a': RuneTypeVowel,
+	'b': RuneTypeConsonant,
+	'c': RuneTypeConsonant,
+	'd': RuneTypeConsonant,
+	'e': RuneTypeVowel,
+	'f': RuneTypeConsonant,
+	'g': RuneTypeConsonant,
+	'h': RuneTypeConsonant,
+	'i': RuneTypeVowel,
+	'j': RuneTypeConsonant,
+	'k': RuneTypeConsonant,
+	'l': RuneTypeConsonant,
+	'm': RuneTypeConsonant,
+	'n': RuneTypeConsonant,
+	'o': RuneTypeVowel,
+	'p': RuneTypeConsonant,
+	'q': RuneTypeConsonant,
+	'r': RuneTypeConsonant,
+	's': RuneTypeConsonant,
+	't': RuneTypeConsonant,
+	'u': RuneTypeVowel,
+	'v': RuneTypeConsonant,
+	'w': RuneTypeConsonant,
+	'x': RuneTypeConsonant,
+	'y': RuneTypeConsonant,
+	'z': RuneTypeConsonant,
 
 	// Uppercase
-	'A': TokenTypeVowel,
-	'B': TokenTypeConsonant,
-	'C': TokenTypeConsonant,
-	'D': TokenTypeConsonant,
-	'E': TokenTypeVowel,
-	'F': TokenTypeConsonant,
-	'G': TokenTypeConsonant,
-	'H': TokenTypeConsonant,
-	'I': TokenTypeVowel,
-	'J': TokenTypeConsonant,
-	'K': TokenTypeConsonant,
-	'L': TokenTypeConsonant,
-	'M': TokenTypeConsonant,
-	'N': TokenTypeConsonant,
-	'O': TokenTypeVowel,
-	'P': TokenTypeConsonant,
-	'Q': TokenTypeConsonant,
-	'R': TokenTypeConsonant,
-	'S': TokenTypeConsonant,
-	'T': TokenTypeConsonant,
-	'U': TokenTypeVowel,
-	'V': TokenTypeConsonant,
-	'W': TokenTypeConsonant,
-	'X': TokenTypeConsonant,
-	'Y': TokenTypeConsonant,
-	'Z': TokenTypeConsonant,
+	'A': RuneTypeVowel,
+	'B': RuneTypeConsonant,
+	'C': RuneTypeConsonant,
+	'D': RuneTypeConsonant,
+	'E': RuneTypeVowel,
+	'F': RuneTypeConsonant,
+	'G': RuneTypeConsonant,
+	'H': RuneTypeConsonant,
+	'I': RuneTypeVowel,
+	'J': RuneTypeConsonant,
+	'K': RuneTypeConsonant,
+	'L': RuneTypeConsonant,
+	'M': RuneTypeConsonant,
+	'N': RuneTypeConsonant,
+	'O': RuneTypeVowel,
+	'P': RuneTypeConsonant,
+	'Q': RuneTypeConsonant,
+	'R': RuneTypeConsonant,
+	'S': RuneTypeConsonant,
+	'T': RuneTypeConsonant,
+	'U': RuneTypeVowel,
+	'V': RuneTypeConsonant,
+	'W': RuneTypeConsonant,
+	'X': RuneTypeConsonant,
+	'Y': RuneTypeConsonant,
+	'Z': RuneTypeConsonant,
 
 	// Whitespace
-	' ':  TokenTypeWhiteSpace,
-	'\t': TokenTypeWhiteSpace,
-	'\n': TokenTypeWhiteSpace,
-	'\r': TokenTypeWhiteSpace,
+	' ':  RuneTypeWhiteSpace,
+	'\t': RuneTypeWhiteSpace,
+	'\n': RuneTypeWhiteSpace,
+	'\r': RuneTypeWhiteSpace,
 
 	// Word Stop
-	'”': TokenTypeWordStop,
-	'"': TokenTypeWordStop,
-	',': TokenTypeWordStop,
-	')': TokenTypeWordStop,
+	'”': RuneTypeWordStop,
+	'"': RuneTypeWordStop,
+	',': RuneTypeWordStop,
+	')': RuneTypeWordStop,
 
 	// Sentence Stop
-	'.': TokenTypeSentenceStop,
-	';': TokenTypeSentenceStop,
-	'!': TokenTypeSentenceStop,
-	'?': TokenTypeSentenceStop,
+	'.': RuneTypeSentenceStop,
+	';': RuneTypeSentenceStop,
+	'!': RuneTypeSentenceStop,
+	'?': RuneTypeSentenceStop,
 }
 
 const (
-	TokenTypeSentenceStop TokenType = iota
-	TokenTypeWhiteSpace
-	TokenTypeWordStop
-	TokenTypeVowel
-	TokenTypeConsonant
-	TokenTypeNumber
-	TokenTypeOther
+	RuneTypeSentenceStop RuneType = iota
+	RuneTypeWhiteSpace
+	RuneTypeWordStop
+	RuneTypeVowel
+	RuneTypeConsonant
+	RuneTypeNumber
+	RuneTypeOther
 )
-
-type Token struct {
-	Type  TokenType
-	Value rune
-}

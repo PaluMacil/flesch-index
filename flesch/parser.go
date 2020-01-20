@@ -7,8 +7,7 @@ import (
 )
 
 type DocumentReport struct {
-	Sentences    []Sentence
-	currentToken int
+	Sentences []Sentence
 }
 
 func ParseFile(filename string) (DocumentReport, error) {
@@ -22,18 +21,15 @@ func ParseFile(filename string) (DocumentReport, error) {
 func ParseBytes(bytes []byte) (DocumentReport, error) {
 	var report DocumentReport
 
-	tokens := make([]Token, len(bytes))
-	for i, b := range bytes {
-		tokens[i] = Tokenize(b)
-	}
-	var currentTokenIndex int
+	runes := []rune(string(bytes))
+	var currentRuneIndex int
 	for {
-		sentence, err := GetSentence(tokens, currentTokenIndex)
+		sentence, err := GetSentence(runes, currentRuneIndex)
 		if err != nil {
 			break
 		}
 		report.Sentences = append(report.Sentences, sentence)
-		currentTokenIndex = sentence.End + 1
+		currentRuneIndex = sentence.End + 1
 	}
 
 	return report, nil
@@ -41,24 +37,24 @@ func ParseBytes(bytes []byte) (DocumentReport, error) {
 
 var NoMoreSentences = errors.New("no more sentences")
 
-func GetSentence(allTokens []Token, start int) (Sentence, error) {
+func GetSentence(allRunes []rune, start int) (Sentence, error) {
 	i := start
-	sentence := Sentence{allTokens: allTokens}
+	sentence := Sentence{allRunes: allRunes}
 	var sentenceStarted bool
 	for {
-		if i >= len(allTokens) {
+		if i >= len(allRunes) {
 			return sentence, NoMoreSentences
 		}
-		token := allTokens[i]
+		r := allRunes[i]
 		// if the sentence hasn't started yet...
 		if !sentenceStarted {
-			// if the token is a vowel or consonant, the sentence will have started here
-			if token.Type == TokenTypeVowel || token.Type == TokenTypeConsonant {
+			// if the rune is a vowel or consonant, the sentence will have started here
+			if TypeOfRune(r) == RuneTypeVowel || TypeOfRune(r) == RuneTypeConsonant {
 				sentenceStarted = true
 				sentence.Start = i
 			}
 		} else {
-			if token.Type == TokenTypeSentenceStop {
+			if TypeOfRune(r) == RuneTypeSentenceStop {
 				sentence.End = i
 				return sentence, nil
 			}

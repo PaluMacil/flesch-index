@@ -5,12 +5,12 @@ import (
 	"testing"
 )
 
-func TestTokenize(t *testing.T) {
+func TestTypeOfRune(t *testing.T) {
 	vowels := []byte{[]byte("a")[0], []byte("e")[0], []byte("i")[0], []byte("o")[0], []byte("u")[0], []byte("A")[0],
 		[]byte("E")[0], []byte("I")[0], []byte("O")[0], []byte("U")[0]}
 	for _, vowel := range vowels {
 		token := flesch.Tokenize(vowel)
-		if token.Type != flesch.TokenTypeVowel {
+		if flesch.TypeOfRune(token) != flesch.RuneTypeVowel {
 			t.Errorf("For %v, didn't get vowel", token.Value)
 		}
 	}
@@ -18,7 +18,7 @@ func TestTokenize(t *testing.T) {
 	consonants := []byte{[]byte("b")[0], []byte("B")[0], []byte("L")[0], []byte("f")[0], []byte("T")[0], []byte("Q")[0]}
 	for _, consonant := range consonants {
 		token := flesch.Tokenize(consonant)
-		if token.Type != flesch.TokenTypeConsonant {
+		if flesch.TypeOfRune(token) != flesch.RuneTypeConsonant {
 			t.Errorf("For %v, didn't get consonant", token.Value)
 		}
 	}
@@ -26,7 +26,7 @@ func TestTokenize(t *testing.T) {
 	whitespace := []byte{[]byte("\n")[0], []byte("\t")[0], []byte(" ")[0], []byte("\r")[0]}
 	for _, ws := range whitespace {
 		token := flesch.Tokenize(ws)
-		if token.Type != flesch.TokenTypeWhiteSpace {
+		if flesch.TypeOfRune(token) != flesch.RuneTypeWhiteSpace {
 			t.Errorf("For %v, didn't get whitespace", token.Value)
 		}
 	}
