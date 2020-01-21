@@ -24,7 +24,9 @@ func main() {
 
 	fmt.Println("Document:", document.Name())
 	fmt.Println()
-	fmt.Println("Flesch Index Score:", document.Score())
+	fmt.Printf("Flesch Reading Ease Score: %.2f\n", document.Score())
+	fmt.Println("Readability:", document.ReadableScore())
+	fmt.Printf("Flesch–Kincaid Grade Level: %.2f\n", document.Kincaid())
 
 	if *flagAnalysis {
 		fmt.Println()
@@ -35,5 +37,6 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println(report.SyllableAnalysis.ChartPath)
+		fmt.Println(report.SyllableRatioAnalysis.ChartPath)
 	}
 }

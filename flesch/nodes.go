@@ -57,17 +57,54 @@ func (d Document) Syllables() int {
 }
 
 func (d Document) Score() float32 {
-	syllables := float32(d.Syllables())
+	score := 206.835 - (84.6 * d.avgSylPerWord()) - (1.015 * d.avgWordPerSen())
+
+	return score
+}
+
+func (d Document) Kincaid() float32 {
+	score := .39*d.avgWordPerSen() + 11.8*d.avgSylPerWord() - 15.59
+
+	return score
+}
+
+func (d Document) avgWordPerSen() float32 {
 	words := float32(d.WordCount())
 	sentences := float32(len(d.Sentences))
 
-	avgWordPerSen := words / sentences
-	// average syllables per word
-	avgSylPerWord := syllables / words
+	return words / sentences
+}
 
-	score := 206.835 - (84.6 * avgSylPerWord) - (1.015 * avgWordPerSen)
+func (d Document) avgSylPerWord() float32 {
+	syllables := float32(d.Syllables())
+	words := float32(d.WordCount())
 
-	return score
+	return syllables / words
+}
+
+func (d Document) ReadableScore() string {
+	var scoreMessage string
+	score := d.Score()
+	switch {
+	case score <= 100 && score > 90:
+		scoreMessage = "5th grade "
+	case score <= 90 && score > 80:
+		scoreMessage = "6th grade "
+	case score <= 80 && score > 70:
+		scoreMessage = "7th grade "
+	case score <= 70 && score > 60:
+		scoreMessage = "8th & 9th grade "
+	case score <= 60 && score > 50:
+		scoreMessage = "10th to 12th grade"
+	case score <= 50 && score > 30:
+		scoreMessage = "College"
+	case score <= 30 && score >= 0:
+		scoreMessage = "College graduate"
+	default:
+		scoreMessage = "(invalid)"
+	}
+
+	return scoreMessage
 }
 
 // Sentence is encountered whenever you find a word that
@@ -126,7 +163,7 @@ func (w Word) String() string {
 // you detect a vowel at the start of a word or a vowel
 // following a consonant in a word. A lone ‘e’ at the end
 // of a word does not count as a syllable. Three letter words
-// or less are always one syllable.
+// or less are always one syllable. One is the minimum.
 func (w Word) Syllables() int {
 	word := w.Runes()
 
@@ -264,6 +301,7 @@ var runeLookup = map[rune]RuneType{
 	',': RuneTypeWordStop,
 	')': RuneTypeWordStop,
 	':': RuneTypeWordStop,
+	'—': RuneTypeWordStop,
 
 	// Sentence Stop
 	'.': RuneTypeSentenceStop,
