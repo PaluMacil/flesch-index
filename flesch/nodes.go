@@ -24,6 +24,29 @@ func (d Document) WordCount() int {
 	return count
 }
 
+func (d Document) Words() []Word {
+	var words []Word
+	for _, sentence := range d.Sentences {
+		words = append(words, sentence.Words...)
+	}
+
+	return words
+}
+
+func (d Document) UniqueWords() []Word {
+	keys := make(map[string]bool)
+	var list []Word
+	for _, word := range d.Words() {
+		// case invariant
+		wordString := strings.ToUpper(word.String())
+		if _, exists := keys[wordString]; !exists {
+			keys[wordString] = true
+			list = append(list, word)
+		}
+	}
+	return list
+}
+
 func (d Document) Syllables() int {
 	var count int
 	for _, s := range d.Sentences {
