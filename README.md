@@ -2,7 +2,6 @@
 
 ## Summary
 
-The purpose of this tool is to demonstrate my ability to process data for a graduate level course in machine learning. 
 The Flesch Index is a score that indicates approximate textual complexity of a passage based upon a fairly simple 
 formula. The language of machine learning is Python, but as an experienced developer I have chosen to explore another 
 alternative to broaden my horizons. Therefore, this project uses Go to calculate and produce visualizations that 
