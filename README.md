@@ -8,16 +8,6 @@ formula. The language of machine learning is Python, but as an experienced devel
 alternative to broaden my horizons. Therefore, this project uses Go to calculate and produce visualizations that 
 describe readability characteristics of documents.
 
-### Project and Course Name
-
-Project 1: Exploratory Data Analysis
-
-CIS 678, Winter 2020
-
-### Author Details
-
-Daniel Wolf
-
 ### Language and Library Choice
 
 Besides professional broadening ambitions, there are a number of good reasons to choose Go for numerical analysis. Go is 
@@ -205,19 +195,9 @@ Besides gonum/plot, I have no other external references. All calculations are im
 references outside the standard library. Standard library packages used are limited to error handing, tests, string 
 format, tests, and IO.
 
-## Practical Application and Limitations
+## Limitations
 
-I don't anticipate particularly valuable usage of this library for others. The intent is to demonstrate to my professor 
-that I can create reasonable applications that process data, and as a software engineer I had better deliver, even if 
-this language varies from my daily driver (C# and Typescript). Go is a personal favorite, so I intent to learn about and 
-demonstrate the use of gonum especially. Readability calculations are readily available online and in almost every word 
+
+Readability calculations are readily available online and in almost every word 
 processing application, so there is no shortage of existing solutions to measure readability of text. Some tools even 
 examine multiple languages, whereas this formula relies upon assuming English prose.
-
-## License and Usage Guidelines
-
-I have licensed this as under an MIT license, which provides broad rights for reuse. However, if you are a student 
-somewhere with a similar project, your ethical codes apply and you might not be allowed to use everything you see here 
-based upon your academic guidelines.
-
-I approached my professor, Dr. Wolffe, for permission to host this in a public repo and permission was granted.
